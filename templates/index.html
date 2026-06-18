@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orientation FS — UCD El Jadida</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#f0f4f8;color:#1e293b}
+.header{background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:white;padding:20px 32px}
+.header h1{font-size:1.4rem;font-weight:700}
+.header p{font-size:.85rem;opacity:.85;margin-top:4px}
+.progress-bar{height:5px;background:#e2e8f0;position:sticky;top:0;z-index:100}
+.progress-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);transition:width .4s;width:0}
+.steps-nav{display:flex;justify-content:center;gap:8px;padding:14px;background:white;border-bottom:1px solid #e2e8f0;flex-wrap:wrap}
+.dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;background:#e2e8f0;color:#64748b;transition:all .3s}
+.dot.active{background:#3b82f6;color:white}
+.dot.done{background:#10b981;color:white}
+.container{max-width:760px;margin:28px auto;padding:0 16px}
+.section{background:white;border-radius:16px;padding:26px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:none}
+.section.active{display:block;animation:fadeIn .4s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.sh{display:flex;align-items:center;gap:12px;margin-bottom:22px;padding-bottom:14px;border-bottom:2px solid #f1f5f9}
+.sh .ico{font-size:1.8rem}
+.sh .ttl{font-size:1.05rem;font-weight:700;color:#1e3a8a}
+.sh .sub{font-size:.8rem;color:#64748b}
+.fg{margin-bottom:18px}
+label{display:block;font-size:.84rem;font-weight:600;color:#374151;margin-bottom:7px}
+input[type=number],select{width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.93rem;background:#f8fafc;transition:border .2s}
+input[type=number]:focus,select:focus{outline:none;border-color:#3b82f6;background:white}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.g2{grid-template-columns:1fr}}
+/* Radio cards */
+.rg{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.rc input{display:none}
+.rc label{padding:9px 14px;border:1.5px solid #e2e8f0;border-radius:9px;cursor:pointer;font-size:.82rem;font-weight:500;background:#f8fafc;transition:all .2s;display:block;margin:0}
+.rc input:checked+label{border-color:#3b82f6;background:#eff6ff;color:#1e3a8a;font-weight:700}
+/* Rating */
+.rating-row{margin-bottom:14px}
+.rating-q{font-size:.83rem;color:#374151;font-weight:500;margin-bottom:6px}
+.rating-stars{display:flex;gap:5px}
+.rating-stars input{display:none}
+.rating-stars label{width:38px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;cursor:pointer;background:#f1f5f9;color:#64748b;transition:all .2s;margin:0}
+.rating-stars input:checked+label,.rating-stars label:hover{background:#3b82f6;color:white}
+/* Buttons */
+.btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+.btn{padding:11px 26px;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;border:none;transition:all .2s}
+.btn-p{background:#3b82f6;color:white}.btn-p:hover{background:#2563eb}
+.btn-s{background:#f1f5f9;color:#374151}.btn-s:hover{background:#e2e8f0}
+.btn-ok{background:linear-gradient(135deg,#10b981,#059669);color:white;font-size:1rem;padding:13px 34px}
+/* Results */
+.result-card{border-radius:14px;overflow:hidden;margin-bottom:18px;box-shadow:0 4px 18px rgba(0,0,0,.08)}
+.rh{padding:18px 22px;color:white;display:flex;align-items:center;gap:12px}
+.rrang{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:800}
+.rinfo h3{font-size:1.05rem;font-weight:700}
+.rinfo p{font-size:.8rem;opacity:.85}
+.rtaux{margin-left:auto;text-align:center}
+.rtaux .tn{font-size:1.9rem;font-weight:800}
+.rtaux .tl{font-size:.7rem;opacity:.8}
+.rb{background:white;padding:18px 22px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.tag{padding:3px 11px;border-radius:20px;font-size:.75rem;font-weight:600;background:#f1f5f9;color:#374151}
+.tag.g{background:#d1fae5;color:#065f46}
+.tag.w{background:#fef3c7;color:#92400e}
+.rst{font-size:.78rem;font-weight:700;color:#64748b;margin:12px 0 5px;text-transform:uppercase;letter-spacing:.04em}
+.loading{text-align:center;padding:44px;display:none}
+.spinner{width:46px;height:46px;border:4px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#results{display:none}
+.restart{text-align:center;margin-top:22px}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🎓 Système d'Orientation — Faculté des Sciences</h1>
+  <p>Université Chouaïb Doukkali · El Jadida</p>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="pf"></div></div>
+<div class="steps-nav" id="nav">
+  <div class="dot active" id="d1">1</div>
+  <div class="dot" id="d2">2</div>
+  <div class="dot" id="d3">3</div>
+  <div class="dot" id="d4">4</div>
+  <div class="dot" id="d5">5</div>
+</div>
+
+<div class="container">
+
+<!-- STEP 1: Infos générales + notes -->
+<div class="section active" id="s1">
+  <div class="sh"><span class="ico">📋</span><div><div class="ttl">Informations générales & Notes</div><div class="sub">Votre profil scolaire</div></div></div>
+  <div class="g2">
+    <div class="fg"><label>Sexe</label>
+      <div class="rg">
+        <div class="rc"><input type="radio" name="sexe" id="sx1" value="M"><label for="sx1"> Masculin</label></div>
+        <div class="rc"><input type="radio" name="sexe" id="sx2" value="F"><label for="sx2"> Féminin</label></div>
+      </div>
+    </div>
+    <div class="fg"><label>Type de baccalauréat</label>
+      <div class="rg">
+        <div class="rc"><input type="radio" name="bac_type" id="bt1" value="SM"><label for="bt1"> Sciences Maths</label></div>
+        <div class="rc"><input type="radio" name="bac_type" id="bt2" value="PC"><label for="bt2"> Physique-Chimie</label></div>
+        <div class="rc"><input type="radio" name="bac_type" id="bt3" value="SVT"><label for="bt3"> SVT</label></div>
+        <div class="rc"><input type="radio" name="bac_type" id="bt4" value="Autre"><label for="bt4"> Autre</label></div>
+      </div>
+    </div>
+  </div>
+  <div class="fg"><label>Mention au baccalauréat</label>
+    <div class="rg">
+      <div class="rc"><input type="radio" name="bac_mention" id="bm1" value="Très Bien"><label for="bm1"> Très Bien</label></div>
+      <div class="rc"><input type="radio" name="bac_mention" id="bm2" value="Bien"><label for="bm2"> Bien</label></div>
+      <div class="rc"><input type="radio" name="bac_mention" id="bm3" value="Assez Bien"><label for="bm3"> Assez Bien</label></div>
+      <div class="rc"><input type="radio" name="bac_mention" id="bm4" value="Passable"><label for="bm4"> Passable</label></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="fg"><label>Moyenne générale bac (sur 20)</label><input type="number" id="moy" min="10" max="20" step=".01" placeholder="Ex: 14.50"></div>
+    <div class="fg"><label>Note Mathématiques</label><input type="number" id="n_math" min="0" max="20" step=".5" placeholder="/20"></div>
+    <div class="fg"><label>Note Physique</label><input type="number" id="n_phy" min="0" max="20" step=".5" placeholder="/20"></div>
+    <div class="fg"><label>Note Chimie</label><input type="number" id="n_chim" min="0" max="20" step=".5" placeholder="/20"></div>
+    <div class="fg"><label>Note Biologie / SVT</label><input type="number" id="n_bio" min="0" max="20" step=".5" placeholder="/20"></div>
+  </div>
+  <div class="btn-row"><button class="btn btn-p" onclick="go(1,2)">Suivant -></button></div>
+</div>
+
+<!-- STEP 2: Questions QCM -->
+<div class="section" id="s2">
+  <div class="sh"><span class="ico">🎯</span><div><div class="ttl">Questions sur tes préférences</div><div class="sub">Choisis la réponse qui te correspond le mieux</div></div></div>
+
+  <div class="fg"><label>Q1 — Quelle matière te plaît le plus ?</label>
+    <div class="rg">
+      <div class="rc"><input type="radio" name="q1" id="q1a" value="Mathématiques"><label for="q1a"> Mathématiques</label></div>
+      <div class="rc"><input type="radio" name="q1" id="q1b" value="Physique"><label for="q1b"> Physique</label></div>
+      <div class="rc"><input type="radio" name="q1" id="q1c" value="Chimie"><label for="q1c"> Chimie</label></div>
+      <div class="rc"><input type="radio" name="q1" id="q1d" value="SVT/Biologie"><label for="q1d"> SVT/Biologie</label></div>
+      <div class="rc"><input type="radio" name="q1" id="q1e" value="Informatique"><label for="q1e"> Informatique</label></div>
+    </div>
+  </div>
+
+  <div class="fg"><label>Q2 — Quelle activité te motive le plus ?</label>
+    <div class="rg">
+      <div class="rc"><input type="radio" name="q2" id="q2a" value="Programmation"><label for="q2a"> Programmation</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2b" value="Analyse de données"><label for="q2b"> Analyse de données</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2c" value="Résolution d'exercices"><label for="q2c"> Résolution d'exercices</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2d" value="Manipulations en laboratoire"><label for="q2d"> Manipulations labo</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2e" value="Expériences biologiques"><label for="q2e"> Expériences biologiques</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2f" value="Expériences en labo"><label for="q2f"> Expériences labo</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2g" value="Observation du vivant"><label for="q2g"> Observation vivant</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2h" value="Sorties terrain"><label for="q2h"> Sorties terrain</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2i" value="Cartographie"><label for="q2i"> Cartographie</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2j" value="Modélisation"><label for="q2j"> Modélisation</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2k" value="Montage/prototypage"><label for="q2k"> Montage/prototypage</label></div>
+      <div class="rc"><input type="radio" name="q2" id="q2l" value="Analyse de mesures"><label for="q2l"> Analyse de mesures</label></div>
+    </div>
+  </div>
+
+  <div class="fg"><label>Q3 — Quel type de problèmes préfères-tu ?</label>
+    <div class="rg">
+      <div class="rc"><input type="radio" name="q3" id="q3a" value="Comprendre le vivant"><label for="q3a"> Comprendre le vivant</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3b" value="Analyser des réactions"><label for="q3b"> Analyser des réactions</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3c" value="Lire des cartes/données terrain"><label for="q3c"> Lire cartes/terrain</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3d" value="Concevoir des solutions logiques"><label for="q3d"> Concevoir solutions logiques</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3e" value="Prouver / raisonner abstraitement"><label for="q3e"> Raisonner abstraitement</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3f" value="Modéliser des systèmes physiques"><label for="q3f"> Modéliser systèmes physiques</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3g" value="Résoudre des problèmes techniques"><label for="q3g"> Problèmes techniques</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3h" value="Analyser des données"><label for="q3h"> Analyser des données</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3i" value="Programmer"><label for="q3i"> Programmer</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3j" value="Modéliser"><label for="q3j"> Modéliser</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3k" value="Optimiser"><label for="q3k"> Optimiser</label></div>
+      <div class="rc"><input type="radio" name="q3" id="q3l" value="Diagnostiquer"><label for="q3l"> Diagnostiquer</label></div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="fg"><label>Q4 — Tu préfères travailler comment ?</label>
+      <div class="rg">
+        <div class="rc"><input type="radio" name="q4" id="q4a" value="Individuel"><label for="q4a"> Individuel</label></div>
+        <div class="rc"><input type="radio" name="q4" id="q4b" value="Binôme"><label for="q4b"> Binôme</label></div>
+        <div class="rc"><input type="radio" name="q4" id="q4c" value="Groupe"><label for="q4c"> Groupe</label></div>
+      </div>
+    </div>
+    <div class="fg"><label>Q5 — Dans quel environnement te vois-tu ?</label>
+      <div class="rg">
+        <div class="rc"><input type="radio" name="q5" id="q5a" value="Labo bio"><label for="q5a"> Labo bio</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5b" value="Labo physico-chimie"><label for="q5b"> Labo physico-chimie</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5c" value="Terrain"><label for="q5c"> Terrain</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5d" value="Terrain + labo"><label for="q5d"> Terrain + labo</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5e" value="Salle info"><label for="q5e"> Salle info</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5f" value="Projet numérique"><label for="q5f"> Projet numérique</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5g" value="Atelier/labo technique"><label for="q5g"> Atelier technique</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5h" value="Cours + TD"><label for="q5h"> Cours + TD</label></div>
+        <div class="rc"><input type="radio" name="q5" id="q5i" value="Mixte"><label for="q5i"> Mixte</label></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="go(2,1)">← Retour</button>
+    <button class="btn btn-p" onclick="go(2,3)">Suivant →</button>
+  </div>
+</div>
+
+<!-- STEP 3: Intérêts domaines -->
+<div class="section" id="s3">
+  <div class="sh"><span class="ico">❤️</span><div><div class="ttl">Intérêts par domaine</div><div class="sub">1 = Pas du tout · 5 = Beaucoup</div></div></div>
+  <div id="ratings1"></div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="go(3,2)">← Retour</button>
+    <button class="btn btn-p" onclick="go(3,4)">Suivant →</button>
+  </div>
+</div>
+
+<!-- STEP 4: Niveaux & aisances -->
+<div class="section" id="s4">
+  <div class="sh"><span class="ico">🧠</span><div><div class="ttl">Niveaux & Aisances</div><div class="sub">Évalue tes compétences personnelles</div></div></div>
+  <div id="ratings2"></div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="go(4,3)">← Retour</button>
+    <button class="btn btn-p" onclick="go(4,5)">Suivant →</button>
+  </div>
+</div>
+
+<!-- STEP 5: Objectif carrière -->
+<div class="section" id="s5">
+  <div class="sh"><span class="ico">🚀</span><div><div class="ttl">Objectif de carrière</div><div class="sub">Quel domaine t'attire le plus ?</div></div></div>
+  <div class="fg">
+    <div class="rg">
+      <div class="rc"><input type="radio" name="q25" id="c1" value="Santé / biomédical"><label for="c1">❤️ Santé / biomédical</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c2" value="Agronomie / biotechnologie végétale"><label for="c2">🌿 Agronomie / biotech végétale</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c3" value="Matériaux / industrie"><label for="c3">⚗️ Matériaux / industrie</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c4" value="Industrie chimique / agroalimentaire"><label for="c4">🏭 Industrie chimique / agroalim.</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c5" value="Environnement / procédés"><label for="c5">🌍 Environnement / procédés</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c6" value="Géologie / mines / géomatique"><label for="c6">🗺️ Géologie / mines</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c7" value="Data / IA / analytique"><label for="c7">📊 Data / IA / analytique</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c8" value="Développement logiciel / bases de données"><label for="c8">💻 Dev logiciel / BDD</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c9" value="Maths appliquées / modélisation"><label for="c9">📐 Maths appliquées</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c10" value="Physique fondamentale / recherche"><label for="c10">🔭 Physique / recherche</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c11" value="Energie / mécanique industrielle"><label for="c11">⚙️ Energie / mécanique</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c12" value="Génie électrique / énergies renouvelables"><label for="c12">⚡ Génie électrique / EnR</label></div>
+      <div class="rc"><input type="radio" name="q25" id="c13" value="Télécoms / réseaux"><label for="c13">📡 Télécoms / réseaux</label></div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-s" onclick="go(5,4)">← Retour</button>
+    <button class="btn btn-ok" onclick="submit()">🔍 Obtenir ma recommandation</button>
+  </div>
+</div>
+
+<!-- Loading -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p style="color:#64748b;font-weight:600">Analyse de votre profil en cours...</p>
+</div>
+
+<!-- Results -->
+<div id="results">
+  <div style="text-align:center;margin-bottom:24px">
+    <h2 style="font-size:1.4rem;font-weight:800;color:#1e3a8a">🎓 Votre recommandation personnalisée</h2>
+    <p style="color:#64748b;font-size:.88rem">Basée sur votre profil complet — FSD El Jadida · UCD</p>
+  </div>
+  <div id="res-container"></div>
+  <div class="restart"><button class="btn btn-s" onclick="location.reload()" style="padding:12px 30px">🔄 Recommencer</button></div>
+</div>
+
+</div>
+
+<script>
+// Build rating widgets
+const r1Items = [
+  {id:"q6",  label:"🧬 Intérêt pour la biologie"},
+  {id:"q7",  label:"⚗️ Intérêt pour la chimie"},
+  {id:"q8",  label:"📐 Intérêt pour les mathématiques"},
+  {id:"q9",  label:"⚡ Intérêt pour la physique"},
+  {id:"q10", label:"💻 Intérêt pour l'informatique"},
+  {id:"q11", label:"🏔️ Intérêt pour le travail de terrain"},
+  {id:"q12", label:"❤️ Intérêt pour la santé / biomédical"},
+  {id:"q13", label:"🌍 Intérêt pour l'environnement"},
+  {id:"q14", label:"🏭 Intérêt pour l'industrie / procédés"},
+  {id:"q15", label:"💻 Intérêt pour le développement logiciel"},
+  {id:"q16", label:"📊 Intérêt pour la data / IA"},
+];
+const r2Items = [
+  {id:"q17", label:"📚 Je réussis dans les matières basées sur mémorisation"},
+  {id:"q18", label:"🔍 Je réussis bien dans l'analyse et l'interprétation"},
+  {id:"q19", label:"🧠 Je suis à l'aise avec le raisonnement abstrait"},
+  {id:"q20", label:"💻 Je suis à l'aise avec la programmation"},
+  {id:"q21", label:"🧬 Aisance dans les manipulations biologiques"},
+  {id:"q22", label:"⚗️ Aisance dans les TP physique/chimie"},
+  {id:"q23", label:"📊 Aisance dans les projets numériques"},
+  {id:"q24", label:"🏔️ Aisance dans les sorties terrain"},
+];
+
+function buildRatings(items, containerId) {
+  document.getElementById(containerId).innerHTML = items.map(item => `
+    <div class="rating-row">
+      <div class="rating-q">${item.label}</div>
+      <div class="rating-stars">
+        ${[1,2,3,4,5].map(v=>`
+          <input type="radio" name="${item.id}" id="${item.id}_${v}" value="${v}">
+          <label for="${item.id}_${v}">${v}</label>
+        `).join('')}
+      </div>
+    </div>`).join('');
+}
+buildRatings(r1Items, 'ratings1');
+buildRatings(r2Items, 'ratings2');
+
+let cur = 1;
+const total = 5;
+
+function go(from, to) {
+  document.getElementById('s'+from).classList.remove('active');
+  document.getElementById('s'+to).classList.add('active');
+  cur = to;
+  document.getElementById('pf').style.width = (cur/total*100)+'%';
+  for(let i=1;i<=total;i++){
+    const d = document.getElementById('d'+i);
+    d.className = 'dot'+(i<cur?' done':i===cur?' active':'');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function getR(name){ const e=document.querySelector(`input[name="${name}"]:checked`); return e?parseFloat(e.value):3; }
+function getRadio(name){ const e=document.querySelector(`input[name="${name}"]:checked`); return e?e.value:''; }
+
+async function submit() {
+  const data = {
+    sexe: getRadio('sexe'), bac_type: getRadio('bac_type'), bac_mention: getRadio('bac_mention'),
+    moyenne_generale_bac: parseFloat(document.getElementById('moy').value)||12,
+    note_math:    parseFloat(document.getElementById('n_math').value)||12,
+    note_physique:parseFloat(document.getElementById('n_phy').value)||12,
+    note_chimie:  parseFloat(document.getElementById('n_chim').value)||12,
+    note_biologie:parseFloat(document.getElementById('n_bio').value)||12,
+    q1:getRadio('q1'), q2:getRadio('q2'), q3:getRadio('q3'),
+    q4:getRadio('q4'), q5:getRadio('q5'), q25:getRadio('q25'),
+    q6:getR('q6'),q7:getR('q7'),q8:getR('q8'),q9:getR('q9'),q10:getR('q10'),
+    q11:getR('q11'),q12:getR('q12'),q13:getR('q13'),q14:getR('q14'),
+    q15:getR('q15'),q16:getR('q16'),q17:getR('q17'),q18:getR('q18'),
+    q19:getR('q19'),q20:getR('q20'),q21:getR('q21'),q22:getR('q22'),
+    q23:getR('q23'),q24:getR('q24'),
+  };
+
+  document.getElementById('s5').style.display='none';
+  document.getElementById('loading').style.display='block';
+  document.getElementById('nav').style.display='none';
+
+  try {
+    const res = await fetch('/recommander',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const results = await res.json();
+    showResults(results);
+  } catch(e) { alert('Erreur serveur. Vérifiez que app.py est lancé.'); }
+  document.getElementById('loading').style.display='none';
+}
+
+function showResults(results) {
+  const medals = ['🥇','🥈','🥉'];
+  document.getElementById('res-container').innerHTML = results.map((r,i) => `
+    <div class="result-card">
+      <div class="rh" style="background:linear-gradient(135deg,${r.couleur},${r.couleur}cc)">
+        <div class="rrang">${medals[i]}</div>
+        <div class="rinfo"><h3>${r.icone} ${r.nom}</h3><p>Code: ${r.code}</p></div>
+        <div class="rtaux"><div class="tn">${r.taux}%</div><div class="tl">Compatibilité</div></div>
+      </div>
+      <div class="rb">
+        <div class="rst">📚 Modules clés</div>
+        <div class="tags">${r.modules.map(m=>`<span class="tag">${m}</span>`).join('')}</div>
+        <div class="rst">💼 Débouchés</div>
+        <div class="tags">${r.debouches.map(d=>`<span class="tag g">${d}</span>`).join('')}</div>
+        <div class="rst">⚠️ Matières à renforcer</div>
+        <div class="tags">${r.renforcer.map(m=>`<span class="tag ${m.includes('✅')?'g':'w'}">${m}</span>`).join('')}</div>
+      </div>
+    </div>`).join('');
+  document.getElementById('results').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
